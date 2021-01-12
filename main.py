@@ -18,7 +18,8 @@ def print_hi(name):
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
     exploring = 0
-    testing = 1
+    testing = 0
+    JSON = 1
     if exploring:
         listURL = 'https://magic.wizards.com/en/content/deck-lists-magic-online-products-game-info'
 
@@ -47,8 +48,20 @@ if __name__ == '__main__':
         for tourney in tourneys:
             print(tourney)
 
-            decks = get_decks_from_Web(BaseURL + tourney)
+            decks = get_decks_from_web(BaseURL + tourney)
             save_decks(decks, './Decks', tourney)
+
+    if JSON:
+        tourneys = get_tournament("10/01/2020", "01/12/2021")
+        print(tourneys)
+        print(len(tourneys))
+
+        BaseURL = 'https://magic.wizards.com/en/articles/archive/mtgo-standings/'
+        for tourney in tourneys:
+            print(tourney)
+
+            decks = get_decks_from_web(BaseURL + tourney)
+            save_decks_as_json(decks, './JSON', tourney)
 
     #get_decks_from_file('./Decks/modern-showcase-challenge-2020-12-06.txt')
 

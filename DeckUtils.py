@@ -4,6 +4,11 @@ import requests
 from bs4 import BeautifulSoup
 
 
+def make_deck():
+    deck = Deck()
+    return deck
+
+
 class Deck:
     pilot = ""
     planeswalker = []
@@ -28,9 +33,6 @@ class Deck:
         self.other = []
         self.sideboard = []
 
-    def make_deck(self):
-        deck = Deck()
-        return deck
 
 def get_tournament(fromDate, toDate):
     if not isinstance(fromDate, str) and not isinstance(toDate, str):
@@ -45,7 +47,6 @@ def get_tournament(fromDate, toDate):
     # &sort=DESC
     # &word=modern
 
-
     payload = {'l': 'en', 'f': 9041, 'search-result-theme': '', 'limit': 365,
                'fromDate': fromDate, 'toDate': toDate,
                'sort': 'DESC', 'word': 'modern'}
@@ -57,26 +58,22 @@ def get_tournament(fromDate, toDate):
         temp = BeautifulSoup(field, 'html.parser')
 
         title = temp.find('h3').text.lower().replace(' ', '-')
-        YYYY = temp.find_all("span", {"class": "year"})[0].text.strip()
-        MM = str(strptime(temp.find_all("span", {"class": "month"})[0].text.strip()[0:3], '%b').tm_mon)
-        DD = temp.find_all("span", {"class": "day"})[0].text.strip()
+        yyyy = temp.find_all("span", {"class": "year"})[0].text.strip()
+        mm = str(strptime(temp.find_all("span", {"class": "month"})[0].text.strip()[0:3], '%b').tm_mon)
+        dd = temp.find_all("span", {"class": "day"})[0].text.strip()
 
-        #out.append(title + "-" + YYYY + "-" + MM + "-" + DD)
-        out.append(title + "-{:04d}-{:02d}-{:02d}".format(int(YYYY), int(MM), int(DD)))
+        # out.append(title + "-" + YYYY + "-" + MM + "-" + DD)
+        out.append(title + "-{:04d}-{:02d}-{:02d}".format(int(yyyy), int(mm), int(dd)))
 
     return out
 
-def get_decks_from_Web(URL):
-    page = requests.get(URL)
+
+def get_decks_from_web(url):
+    page = requests.get(url)
 
     soup = BeautifulSoup(page.content, 'html.parser')
 
     results = soup.find(id="content-detail-page-of-an-article")
-    # f = open('C:/Users/jjfll/Desktop/test.html', 'w+')
-    # f.write(results.prettify())
-    # f.close()
-
-    # decks = results.find_all("div", {"class": "page-width bean_block bean_block_deck_list bean--wiz-content-deck-list clearfix"})
 
     piles = results.find_all("div", {"class": "deck-list-text"})
     pilots = results.find_all("span", {"class": "deck-meta"})
@@ -137,10 +134,12 @@ def get_decks_from_Web(URL):
 
     return decks
 
-def write_cards_to_file(file, list):
-    if list:
-        for item in list:
+
+def write_cards_to_file(file, pile):
+    if pile:
+        for item in pile:
             file.write('\t\t' + item[0] + ' ' + item[1] + '\n')
+
 
 def save_decks(decks, directory, name):
     file = open(directory + '/' + name + '.txt', 'w+')
@@ -159,19 +158,47 @@ def save_decks(decks, directory, name):
         file.write('\tSideBoard:\n')
         write_cards_to_file(file, deck.sideboard)
 
-
         file.write('----------------------------------------\n')
-
-
 
     file.close()
 
+
+def save_decks_as_json(decks, directory, name):
+    for itx, deck in enumerate(decks):
+        file = open(directory + '/' + name + "_" + str(itx + 1) + '_' + deck.pilot + '.json', 'w+')
+        file.write("{\"data\":{")
+        file.write("\"pilot\":" + "\"" + deck.pilot + "\"" + ",")
+        file.write("\"mainboard\":[")
+        write_cards_to_json(file, deck.other)
+        write_cards_to_json(file, deck.creature)
+        write_cards_to_json(file, deck.planeswalker)
+        write_cards_to_json(file, deck.artifact)
+        write_cards_to_json(file, deck.enchantment)
+        write_cards_to_json(file, deck.instant)
+        write_cards_to_json(file, deck.sorcery)
+        write_cards_to_json(file, deck.land)
+        file.write("],")  # MainBoard close
+        file.write("\"sideboard\":[")
+        write_cards_to_json(file, deck.sideboard)
+        file.write("]")  # SideBoard close
+        file.write("}")  # data close
+        file.write("}")  # JSON close
+        file.close()
+
+
+def write_cards_to_json(file, pile):
+    if pile:
+        for item in pile:
+            file.write("{\"count\":" + item[0] + ",\"card\":\"" + item[1] + '\"},')
+
+
 def get_decks_from_file(directory):
-    open(directory, 'R')
+    f = open(directory, 'r')
 
-
+    print(f.readline())
 
     return 0
+
 
 def compare_decks(deck1, deck2):
     return 0

@@ -1,5 +1,6 @@
 from time import strptime
 
+import json
 import requests
 from bs4 import BeautifulSoup
 
@@ -168,17 +169,26 @@ def save_decks_as_json(decks, directory, name):
         file = open(directory + '/' + name + "_" + str(itx + 1) + '_' + deck.pilot + '.json', 'w+')
         file.write("{\"data\":{")
         file.write("\"pilot\":" + "\"" + deck.pilot + "\"" + ",")
-        file.write("\"mainboard\":[")
+        file.write("\"mainboard\":{")
+        file.write("\"other\":[")
         write_cards_to_json(file, deck.other)
+        file.write("],\"creatures\":[")
         write_cards_to_json(file, deck.creature)
+        file.write("],\"planeswalker\":[")
         write_cards_to_json(file, deck.planeswalker)
+        file.write("],\"artifact\":[")
         write_cards_to_json(file, deck.artifact)
+        file.write("],\"enchantment\":[")
         write_cards_to_json(file, deck.enchantment)
+        file.write("],\"instant\":[")
         write_cards_to_json(file, deck.instant)
+        file.write("],\"sorcery\":[")
         write_cards_to_json(file, deck.sorcery)
+        file.write("],\"land\":[")
         write_cards_to_json(file, deck.land)
-        file.write("],")  # MainBoard close
-        file.write("\"sideboard\":[")
+        file.write("]")  # land close
+        file.write("}")   # MainBoard close
+        file.write(",\"sideboard\":[")
         write_cards_to_json(file, deck.sideboard)
         file.write("]")  # SideBoard close
         file.write("}")  # data close
@@ -188,17 +198,18 @@ def save_decks_as_json(decks, directory, name):
 
 def write_cards_to_json(file, pile):
     if pile:
-        for item in pile:
-            file.write("{\"count\":" + item[0] + ",\"card\":\"" + item[1] + '\"},')
+        for idx, item in enumerate(pile):
+            if idx != 0:
+                file.write(',')
+            file.write("{\"count\":" + item[0] + ",\"card\":\"" + item[1] + '\"}')
+    else:
+        file.write("{}")
 
 
-def get_decks_from_file(directory):
-    f = open(directory, 'r')
+def get_decks_from_json_file(directory):
+    file = open("./JSON/modern-challenge-2021-01-10_1_HouseOfManaMTG.json")
+    deck = json.loads(file.readline())
+    file.close()
+    return deck
 
-    print(f.readline())
 
-    return 0
-
-
-def compare_decks(deck1, deck2):
-    return 0

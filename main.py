@@ -3,17 +3,13 @@
 # Press Shift+F10 to execute it or replace it with your code.
 # Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
 
-from time import strptime
+import json
 
 from selenium.webdriver import Chrome
 from selenium.webdriver.chrome.options import Options
 
 from DeckUtils import *
 
-
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press Ctrl+F8 to toggle the breakpoint.
 
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
@@ -52,16 +48,26 @@ if __name__ == '__main__':
             save_decks(decks, './Decks', tourney)
 
     if JSON:
-        tourneys = get_tournament("10/01/2020", "01/12/2021")
-        print(tourneys)
-        print(len(tourneys))
+        if False:
+            tourneys = get_tournament("10/01/2020", "01/12/2021")
+            #tourneys = get_tournament("01/10/2021", "01/12/2021")
 
-        BaseURL = 'https://magic.wizards.com/en/articles/archive/mtgo-standings/'
-        for tourney in tourneys:
-            print(tourney)
+            print(tourneys)
 
-            decks = get_decks_from_web(BaseURL + tourney)
-            save_decks_as_json(decks, './JSON', tourney)
+            print(len(tourneys))
+
+            BaseURL = 'https://magic.wizards.com/en/articles/archive/mtgo-standings/'
+            for tourney in tourneys:
+                print(tourney)
+
+                decks = get_decks_from_web(BaseURL + tourney)
+                save_decks_as_json(decks, './JSON', tourney)
+
+        if True:
+            deck = get_decks_from_json_file("./JSON/modern-challenge-2021-01-10_1_HouseOfManaMTG.json")
+
+            print(deck)
+
 
     #get_decks_from_file('./Decks/modern-showcase-challenge-2020-12-06.txt')
 

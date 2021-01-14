@@ -1,5 +1,6 @@
 from time import strptime
 
+import os
 import json
 import requests
 from bs4 import BeautifulSoup
@@ -239,13 +240,11 @@ def write_cards_to_json(file, pile):
 
 
 def get_decks_from_json_file(directory):
-    file = open("./JSON/modern-challenge-2021-01-10_1_HouseOfManaMTG.json")
+    file = open(directory)
     jdeck = json.loads(file.readline())
 
     deck = Deck()
     deck.pilot = jdeck['data']['pilot']
-
-    print("\\\'card\\\'")
 
     for item in jdeck['data']['mainboard']:
         exec("for itx in jdeck[\'data\'][\'mainboard\'][\'" + item + "\']:\n\texec(\"if itx:\\n\\tdeck." + item + ".append([itx[\'count\'], itx[\'card\']])\")")
@@ -253,6 +252,14 @@ def get_decks_from_json_file(directory):
     for item in jdeck['data']['sideboard']:
         deck.sideboard.append([item['count'], item['card']])
 
-    deck.print()
-
     return deck
+
+
+def get_json_decks_folder(directory):
+    decks = []
+    for subdir, dirs, files in os.walk(directory):
+        for idx, file in enumerate(files):
+            if file.endswith(".json"):
+                decks.append(get_decks_from_json_file(directory + "/" + file))
+
+    return decks

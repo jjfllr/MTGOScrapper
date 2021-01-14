@@ -49,8 +49,8 @@ if __name__ == '__main__':
 
     if JSON:
         if False:
-            tourneys = get_tournament("10/01/2020", "01/11/2021")
-            #tourneys = get_tournament("01/10/2021", "01/12/2021")
+            #tourneys = get_tournament("10/01/2020", "01/11/2021")
+            tourneys = get_tournament("01/10/2021", "01/14/2021")
 
             print(tourneys)
 
@@ -64,9 +64,9 @@ if __name__ == '__main__':
                 save_decks_as_json(decks, './JSON', tourney)
 
         if True:
-            deck = get_decks_from_json_file("./JSON/modern-challenge-2021-01-10_1_HouseOfManaMTG.json")
+            alldecks = []
+            alldecks = get_json_decks_folder('./JSON')
 
-            print(type(deck))
 
 
 

@@ -34,6 +34,38 @@ class Deck:
         self.other = []
         self.sideboard = []
 
+    def print(self):
+        print("pilot: " + self.pilot)
+        print("Deck:")
+        if self.other:
+            for item in self.other:
+                print("\t" + str(item[0]) + ' ' + item[1])
+        if self.creature:
+            for item in self.creature:
+                print("\t" + str(item[0]) + ' ' + item[1])
+        if self.planeswalker:
+            for item in self.planeswalker:
+                print("\t" + str(item[0]) + ' ' + item[1])
+        if self.artifact:
+            for item in self.artifact:
+                print("\t" + str(item[0]) + ' ' + item[1])
+        if self.enchantment:
+            for item in self.enchantment:
+                print("\t" + str(item[0]) + ' ' + item[1])
+        if self.instant:
+            for item in self.instant:
+                print("\t" + str(item[0]) + ' ' + item[1])
+        if self.sorcery:
+            for item in self.sorcery:
+                print("\t" + str(item[0]) + ' ' + item[1])
+        if self.land:
+            for item in self.land:
+                print("\t" + str(item[0]) + ' ' + item[1])
+        print("Sideboard:")
+        if self.sideboard:
+            for item in self.sideboard:
+                print("\t" + str(item[0]) + ' ' + item[1])
+
 
 def get_tournament(fromDate, toDate):
     if not isinstance(fromDate, str) and not isinstance(toDate, str):
@@ -172,7 +204,7 @@ def save_decks_as_json(decks, directory, name):
         file.write("\"mainboard\":{")
         file.write("\"other\":[")
         write_cards_to_json(file, deck.other)
-        file.write("],\"creatures\":[")
+        file.write("],\"creature\":[")
         write_cards_to_json(file, deck.creature)
         file.write("],\"planeswalker\":[")
         write_cards_to_json(file, deck.planeswalker)
@@ -187,7 +219,7 @@ def save_decks_as_json(decks, directory, name):
         file.write("],\"land\":[")
         write_cards_to_json(file, deck.land)
         file.write("]")  # land close
-        file.write("}")   # MainBoard close
+        file.write("}")  # MainBoard close
         file.write(",\"sideboard\":[")
         write_cards_to_json(file, deck.sideboard)
         file.write("]")  # SideBoard close
@@ -208,8 +240,19 @@ def write_cards_to_json(file, pile):
 
 def get_decks_from_json_file(directory):
     file = open("./JSON/modern-challenge-2021-01-10_1_HouseOfManaMTG.json")
-    deck = json.loads(file.readline())
-    file.close()
+    jdeck = json.loads(file.readline())
+
+    deck = Deck()
+    deck.pilot = jdeck['data']['pilot']
+
+    print("\\\'card\\\'")
+
+    for item in jdeck['data']['mainboard']:
+        exec("for itx in jdeck[\'data\'][\'mainboard\'][\'" + item + "\']:\n\texec(\"if itx:\\n\\tdeck." + item + ".append([itx[\'count\'], itx[\'card\']])\")")
+
+    for item in jdeck['data']['sideboard']:
+        deck.sideboard.append([item['count'], item['card']])
+
+    deck.print()
+
     return deck
-
-

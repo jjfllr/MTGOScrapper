@@ -34,8 +34,7 @@ if __name__ == '__main__':
         search_form.submit()
 
     if False:
-        tourneys = get_tournament("10/01/2020", "01/11/2021")
-        print(tourneys)
+        tourneys = get_tournament("10/01/2020", "01/14/2021")
         print(len(tourneys))
 
         BaseURL = 'https://magic.wizards.com/en/articles/archive/mtgo-standings/'
@@ -46,12 +45,10 @@ if __name__ == '__main__':
             save_decks(decks, './Decks', tourney)
 
     if True: #test 2
-        if False:
+        if True:
             tourneys = get_tournament("10/01/2020", "01/14/2021")
 
-            print(tourneys)
-
-            print(len(tourneys))
+            print(str(len(tourneys)) + " Obtained...\n")
 
             BaseURL = 'https://magic.wizards.com/en/articles/archive/mtgo-standings/'
             for tourney in tourneys:
@@ -62,20 +59,19 @@ if __name__ == '__main__':
 
         if True:
             decks = []
-            if True:
+            if False:
                 decks.append(get_deck_from_json_file('./JSON/modern-challenge-2020-10-05_1_Parrit_(1st Place).json'))
                 decks.append(get_deck_from_json_file('JSON/modern-challenge-2020-10-05_2_kiko_(2nd Place).json'))
             else:
                 decks = get_json_decks_folder('./JSON')
 
-            cummulative_mainboard = [[],[]]
+            cummulative_mainboard = [[], []]
 
             # create the histogram for the decks
             i = 0
             for deck in decks:
-                for idx, card in enumerate(
-                        [deck.other, deck.creature, deck.planeswalker, deck.artifact, deck.enchantment, deck.instant,
-                         deck.sorcery, deck.land]):
+                for idx, card in enumerate(deck.mainboard):
+                    """
                     if card:
                         for instance in card:
                             if not instance[1] in cummulative_mainboard[1]:
@@ -83,7 +79,7 @@ if __name__ == '__main__':
                                 cummulative_mainboard[1].append(instance[1])
                             else:
                                 cummulative_mainboard[0][cummulative_mainboard[1].index(instance[1])] += instance[0]
-
+                    """
             #cummulative mainboard serves as a hash table for the following operations
 
             print(cummulative_mainboard)

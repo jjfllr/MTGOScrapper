@@ -6,66 +6,32 @@ import requests
 from bs4 import BeautifulSoup
 
 
-def make_deck():
-    deck = Deck()
-    return deck
+class Tournament:
+    date = ""
+    type = ""
+    format = ""
+    Decks = []
 
 
 class Deck:
     pilot = ""
     score = ""
-    planeswalker = []
-    creature = []
-    sorcery = []
-    instant = []
-    artifact = []
-    enchantment = []
-    land = []
-    other = []
+    mainboard = []
     sideboard = []
 
     def __init__(self):
         self.pilot = ""
         self.score = ""
-        #8 types field...other field because wizards site
-        self.planeswalker = []
-        self.creature = []
-        self.sorcery = []
-        self.instant = []
-        self.artifact = []
-        self.enchantment = []
-        self.land = []
-        self.other = []
-
+        self.mainboard = []
         self.sideboard = []
 
     def print(self):
         print("pilot: " + self.pilot)
         print("score: " + self.score)
         print("Deck:")
-        if self.other:
-            for item in self.other:
-                print("\t" + str(item[0]) + ' ' + item[1])
-        if self.creature:
-            for item in self.creature:
-                print("\t" + str(item[0]) + ' ' + item[1])
-        if self.planeswalker:
-            for item in self.planeswalker:
-                print("\t" + str(item[0]) + ' ' + item[1])
-        if self.artifact:
-            for item in self.artifact:
-                print("\t" + str(item[0]) + ' ' + item[1])
-        if self.enchantment:
-            for item in self.enchantment:
-                print("\t" + str(item[0]) + ' ' + item[1])
-        if self.instant:
-            for item in self.instant:
-                print("\t" + str(item[0]) + ' ' + item[1])
-        if self.sorcery:
-            for item in self.sorcery:
-                print("\t" + str(item[0]) + ' ' + item[1])
-        if self.land:
-            for item in self.land:
+
+        if self.mainboard:
+            for item in self.mainboard:
                 print("\t" + str(item[0]) + ' ' + item[1])
         print("Sideboard:")
         if self.sideboard:
@@ -126,13 +92,16 @@ def get_decks_from_web(url):
         decks[counter].pilot = pilotinfo[0]
 
 
-        categories = [{"class": "sorted-by-planeswalker clearfix element"},
-                      {"class": "sorted-by-creature clearfix element"}, {"class": "sorted-by-sorcery clearfix element"},
-                      {"class": "sorted-by-instant clearfix element"},
-                      {"class": "sorted-by-enchantment clearfix element"},
-                      {"class": "sorted-by-artifact clearfix element"},
-                      {"class": "sorted-by-Other clearfix element"}, {"class": "sorted-by-land clearfix element"}
-                      ]
+        categories = [
+            {"class": "sorted-by-planeswalker clearfix element"},
+            {"class": "sorted-by-creature clearfix element"},
+            {"class": "sorted-by-sorcery clearfix element"},
+            {"class": "sorted-by-instant clearfix element"},
+            {"class": "sorted-by-enchantment clearfix element"},
+            {"class": "sorted-by-artifact clearfix element"},
+            {"class": "sorted-by-Other clearfix element"},
+            {"class": "sorted-by-land clearfix element"}
+            ]
 
         pile = piles[counter].find("div", {"class": "sorted-by-overview-container sortedContainer"})
         sb = piles[counter].find("div", {"class": "sorted-by-sideboard-container clearfix element"})
@@ -148,22 +117,7 @@ def get_decks_from_web(url):
                 names = tmp.find_all("span", {"class": "card-name"})
 
                 for idx, name in enumerate(names):
-                    if category == categories[0]:
-                        decks[counter].planeswalker.append((number[idx].text, name.text))
-                    if category == categories[1]:
-                        decks[counter].creature.append((number[idx].text, name.text))
-                    if category == categories[2]:
-                        decks[counter].sorcery.append((number[idx].text, name.text))
-                    if category == categories[3]:
-                        decks[counter].instant.append((number[idx].text, name.text))
-                    if category == categories[4]:
-                        decks[counter].enchantment.append((number[idx].text, name.text))
-                    if category == categories[5]:
-                        decks[counter].artifact.append((number[idx].text, name.text))
-                    if category == categories[6]:
-                        decks[counter].other.append((number[idx].text, name.text))
-                    if category == categories[7]:
-                        decks[counter].land.append((number[idx].text, name.text))
+                    decks[counter].mainboard.append((number[idx].text, name.text))
 
         if isinstance(sb, type(pile)):  # no es elegante para nada
             number = []
@@ -186,56 +140,30 @@ def write_cards_to_file(file, pile):
 
 def save_decks(decks, directory, name):
     file = open(directory + '/' + name + '.txt', 'w+')
-
     for deck in decks:
         file.write('Pilot: ' + deck.pilot + '\n')
-        file.write('Score' + deck.score + '\n')
+        file.write('Score: ' + deck.score + '\n')
         file.write('\tDeck:\n')
-        write_cards_to_file(file, deck.other)
-        write_cards_to_file(file, deck.creature)
-        write_cards_to_file(file, deck.planeswalker)
-        write_cards_to_file(file, deck.artifact)
-        write_cards_to_file(file, deck.enchantment)
-        write_cards_to_file(file, deck.instant)
-        write_cards_to_file(file, deck.sorcery)
-        write_cards_to_file(file, deck.land)
+        write_cards_to_file(file, deck.mainboard)
         file.write('\tSideBoard:\n')
         write_cards_to_file(file, deck.sideboard)
-
         file.write('----------------------------------------\n')
-
     file.close()
 
 
 def save_decks_as_json(decks, directory, name):
     for itx, deck in enumerate(decks):
         file = open(directory + '/' + name + "_" + str(itx + 1) + '_' + deck.pilot + '_' + deck.score + '.json', 'w+')
-        file.write("{\"data\":{")
-        file.write("\"pilot\":" + "\"" + deck.pilot + "\"" + ",")
-        file.write("\"score\":" + "\"" + deck.score + "\"" + ",")
-        file.write("\"mainboard\":{")
-        file.write("\"other\":[")
-        write_cards_to_json(file, deck.other)
-        file.write("],\"creature\":[")
-        write_cards_to_json(file, deck.creature)
-        file.write("],\"planeswalker\":[")
-        write_cards_to_json(file, deck.planeswalker)
-        file.write("],\"artifact\":[")
-        write_cards_to_json(file, deck.artifact)
-        file.write("],\"enchantment\":[")
-        write_cards_to_json(file, deck.enchantment)
-        file.write("],\"instant\":[")
-        write_cards_to_json(file, deck.instant)
-        file.write("],\"sorcery\":[")
-        write_cards_to_json(file, deck.sorcery)
-        file.write("],\"land\":[")
-        write_cards_to_json(file, deck.land)
-        file.write("]")  # land close
-        file.write("}")  # MainBoard close
-        file.write(",\"sideboard\":[")
+        file.write("{\n\t\"deck\": {\n")
+        file.write("\t\t\"pilot\": " + "\"" + deck.pilot + "\"" + ",\n")
+        file.write("\t\t\"score\": " + "\"" + deck.score + "\"" + ",\n")
+        file.write("\t\t\"mainboard\":[\n")
+        write_cards_to_json(file, deck.mainboard)
+        file.write("\n\t\t],\n")  # MainBoard close
+        file.write("\t\t\"sideboard\":[\n")
         write_cards_to_json(file, deck.sideboard)
-        file.write("]")  # SideBoard close
-        file.write("}")  # data close
+        file.write("\n\t\t]\n")  # SideBoard close
+        file.write("\t}\n")  # data close
         file.write("}")  # JSON close
         file.close()
 
@@ -244,24 +172,32 @@ def write_cards_to_json(file, pile):
     if pile:
         for idx, item in enumerate(pile):
             if idx != 0:
-                file.write(',')
-            file.write("{\"count\":" + item[0] + ",\"card\":\"" + item[1] + '\"}')
+                file.write(',\n')
+            file.write("\t\t\t{\"count\":" + item[0] + ",\"card\":\"" + item[1] + '\"}')
     else:
         file.write("{}")
 
 
+def remove_linebreaks(file):
+    noLineBreaks = ""
+    for line in file:
+        strippedLine = line.strip()
+        noLineBreaks += strippedLine
+    return noLineBreaks
+
+
 def get_deck_from_json_file(directory):
     file = open(directory)
-    jdeck = json.loads(file.readline())
+
+    jdeck = json.loads(remove_linebreaks(file))
 
     deck = Deck()
-    deck.pilot = jdeck['data']['pilot']
-    deck.score = jdeck['data']['score']
+    deck.pilot = jdeck['deck']['pilot']
+    deck.score = jdeck['deck']['score']
 
-    for item in jdeck['data']['mainboard']:
-        exec("for itx in jdeck[\'data\'][\'mainboard\'][\'" + item + "\']:\n\texec(\"if itx:\\n\\tdeck." + item + ".append([itx[\'count\'], itx[\'card\']])\")")
-
-    for item in jdeck['data']['sideboard']:
+    for item in jdeck['deck']['mainboard']:
+        deck.mainboard.append([item['count'], item['card']])
+    for item in jdeck['deck']['sideboard']:
         deck.sideboard.append([item['count'], item['card']])
 
     return deck
@@ -273,5 +209,4 @@ def get_json_decks_folder(directory):
         for idx, file in enumerate(files):
             if file.endswith(".json"):
                 decks.append(get_deck_from_json_file(directory + "/" + file))
-
     return decks

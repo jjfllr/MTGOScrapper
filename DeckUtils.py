@@ -13,6 +13,7 @@ def make_deck():
 
 class Deck:
     pilot = ""
+    score = ""
     planeswalker = []
     creature = []
     sorcery = []
@@ -25,6 +26,8 @@ class Deck:
 
     def __init__(self):
         self.pilot = ""
+        self.score = ""
+        #8 types field...other field because wizards site
         self.planeswalker = []
         self.creature = []
         self.sorcery = []
@@ -33,10 +36,12 @@ class Deck:
         self.enchantment = []
         self.land = []
         self.other = []
+
         self.sideboard = []
 
     def print(self):
         print("pilot: " + self.pilot)
+        print("score: " + self.score)
         print("Deck:")
         if self.other:
             for item in self.other:
@@ -84,11 +89,11 @@ def get_tournament(fromDate, toDate):
     payload = {'l': 'en', 'f': 9041, 'search-result-theme': '', 'limit': 365,
                'fromDate': fromDate, 'toDate': toDate,
                'sort': 'DESC', 'word': 'modern'}
-    test = requests.get('https://magic.wizards.com/en/section-articles-see-more-ajax', params=payload).json()
+    torunaments = requests.get('https://magic.wizards.com/en/section-articles-see-more-ajax', params=payload).json()
 
     out = []
 
-    for field in test['data']:
+    for field in torunaments['data']:
         temp = BeautifulSoup(field, 'html.parser')
 
         title = temp.find('h3').text.lower().replace(' ', '-')
@@ -106,16 +111,20 @@ def get_decks_from_web(url):
     page = requests.get(url)
 
     soup = BeautifulSoup(page.content, 'html.parser')
-
     results = soup.find(id="content-detail-page-of-an-article")
 
     piles = results.find_all("div", {"class": "deck-list-text"})
     pilots = results.find_all("span", {"class": "deck-meta"})
+
     decks = []
 
     for counter, pilot in enumerate(pilots):
         decks.append(Deck())
-        decks[counter].pilot = pilot.find('h4').text.split(' ', 1)[0]
+        pilotinfo = pilot.find('h4').text.split(' ', 1)
+        if len(pilotinfo) == 2:
+            decks[counter].score = pilotinfo[1]
+        decks[counter].pilot = pilotinfo[0]
+
 
         categories = [{"class": "sorted-by-planeswalker clearfix element"},
                       {"class": "sorted-by-creature clearfix element"}, {"class": "sorted-by-sorcery clearfix element"},
@@ -180,6 +189,7 @@ def save_decks(decks, directory, name):
 
     for deck in decks:
         file.write('Pilot: ' + deck.pilot + '\n')
+        file.write('Score' + deck.score + '\n')
         file.write('\tDeck:\n')
         write_cards_to_file(file, deck.other)
         write_cards_to_file(file, deck.creature)
@@ -199,9 +209,10 @@ def save_decks(decks, directory, name):
 
 def save_decks_as_json(decks, directory, name):
     for itx, deck in enumerate(decks):
-        file = open(directory + '/' + name + "_" + str(itx + 1) + '_' + deck.pilot + '.json', 'w+')
+        file = open(directory + '/' + name + "_" + str(itx + 1) + '_' + deck.pilot + '_' + deck.score + '.json', 'w+')
         file.write("{\"data\":{")
         file.write("\"pilot\":" + "\"" + deck.pilot + "\"" + ",")
+        file.write("\"score\":" + "\"" + deck.score + "\"" + ",")
         file.write("\"mainboard\":{")
         file.write("\"other\":[")
         write_cards_to_json(file, deck.other)
@@ -239,12 +250,13 @@ def write_cards_to_json(file, pile):
         file.write("{}")
 
 
-def get_decks_from_json_file(directory):
+def get_deck_from_json_file(directory):
     file = open(directory)
     jdeck = json.loads(file.readline())
 
     deck = Deck()
     deck.pilot = jdeck['data']['pilot']
+    deck.score = jdeck['data']['score']
 
     for item in jdeck['data']['mainboard']:
         exec("for itx in jdeck[\'data\'][\'mainboard\'][\'" + item + "\']:\n\texec(\"if itx:\\n\\tdeck." + item + ".append([itx[\'count\'], itx[\'card\']])\")")
@@ -260,6 +272,6 @@ def get_json_decks_folder(directory):
     for subdir, dirs, files in os.walk(directory):
         for idx, file in enumerate(files):
             if file.endswith(".json"):
-                decks.append(get_decks_from_json_file(directory + "/" + file))
+                decks.append(get_deck_from_json_file(directory + "/" + file))
 
     return decks

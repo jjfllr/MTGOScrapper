@@ -13,10 +13,8 @@ from DeckUtils import *
 
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
-    exploring = 0
-    testing = 0
-    JSON = 1
-    if exploring:
+
+    if False:
         listURL = 'https://magic.wizards.com/en/content/deck-lists-magic-online-products-game-info'
 
         opts = Options()
@@ -35,7 +33,7 @@ if __name__ == '__main__':
         search_button = browser.find_element_by_id("custom-search-submit")
         search_form.submit()
 
-    if testing:
+    if False:
         tourneys = get_tournament("10/01/2020", "01/11/2021")
         print(tourneys)
         print(len(tourneys))
@@ -47,10 +45,9 @@ if __name__ == '__main__':
             decks = get_decks_from_web(BaseURL + tourney)
             save_decks(decks, './Decks', tourney)
 
-    if JSON:
+    if True: #test 2
         if False:
-            #tourneys = get_tournament("10/01/2020", "01/11/2021")
-            tourneys = get_tournament("01/10/2021", "01/14/2021")
+            tourneys = get_tournament("10/01/2020", "01/14/2021")
 
             print(tourneys)
 
@@ -64,12 +61,33 @@ if __name__ == '__main__':
                 save_decks_as_json(decks, './JSON', tourney)
 
         if True:
-            alldecks = []
-            alldecks = get_json_decks_folder('./JSON')
+            decks = []
+            if True:
+                decks.append(get_deck_from_json_file('./JSON/modern-challenge-2020-10-05_1_Parrit_(1st Place).json'))
+                decks.append(get_deck_from_json_file('JSON/modern-challenge-2020-10-05_2_kiko_(2nd Place).json'))
+            else:
+                decks = get_json_decks_folder('./JSON')
+
+            cummulative_mainboard = [[],[]]
+
+            # create the histogram for the decks
+            i = 0
+            for deck in decks:
+                for idx, card in enumerate(
+                        [deck.other, deck.creature, deck.planeswalker, deck.artifact, deck.enchantment, deck.instant,
+                         deck.sorcery, deck.land]):
+                    if card:
+                        for instance in card:
+                            if not instance[1] in cummulative_mainboard[1]:
+                                cummulative_mainboard[0].append(instance[0])
+                                cummulative_mainboard[1].append(instance[1])
+                            else:
+                                cummulative_mainboard[0][cummulative_mainboard[1].index(instance[1])] += instance[0]
+
+            #cummulative mainboard serves as a hash table for the following operations
+
+            print(cummulative_mainboard)
 
 
-
-
-    #get_decks_from_file('./Decks/modern-showcase-challenge-2020-12-06.txt')
 
 # See PyCharm help at https://www.jetbrains.com/help/pycharm/

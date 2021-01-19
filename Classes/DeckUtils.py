@@ -5,38 +5,10 @@ import json
 import requests
 from bs4 import BeautifulSoup
 
-
-class Tournament:
-    date = ""
-    type = ""
-    format = ""
-    Decks = []
-
-
-class Deck:
-    pilot = ""
-    score = ""
-    mainboard = []
-    sideboard = []
-
-    def __init__(self):
-        self.pilot = ""
-        self.score = ""
-        self.mainboard = []
-        self.sideboard = []
-
-    def print(self):
-        print("pilot: " + self.pilot)
-        print("score: " + self.score)
-        print("Deck:")
-
-        if self.mainboard:
-            for item in self.mainboard:
-                print("\t" + str(item[0]) + ' ' + item[1])
-        print("Sideboard:")
-        if self.sideboard:
-            for item in self.sideboard:
-                print("\t" + str(item[0]) + ' ' + item[1])
+from Classes.Rank import Rank, display_title
+from Classes.Match import Match
+from Classes.Deck import Deck
+from Classes.Tournament import Tournament
 
 
 def get_tournament(fromDate, toDate):
@@ -73,10 +45,44 @@ def get_tournament(fromDate, toDate):
     return out
 
 
+def get_tournament_data_from_web(url):
+    tournament = Tournament()
+
+    page = requests.get(url)
+    soup = BeautifulSoup(page.content, "html.parser")
+
+    result = soup.find(id="content-detail-page-of-an-article")
+
+    # explore tournament
+    quarterfinals = result.find_all("div", {"class": "bracket quarterfinals first"})
+    semifinals = result.find_all("div", {"class": "bracket semifinals"})
+    finals = result.find_all("div", {"class": "finalists"})
+    # ranking stored in table with classes odd and even
+    table = result.find_all("tr", {"class": "odd"}) + result.find_all("tr", {"class": "even"})
+
+    decks = get_decks_from_web(url)
+
+    for idx, entry in enumerate(table):
+        fields = table[idx].find_all("td")
+
+        rank = Rank(int(fields[0].text), fields[1].text, int(fields[2].text), float(fields[3].text), float(fields[4].text), float(fields[5].text))
+        tournament.ranking.append(rank)
+
+    tournament.ranking.sort(key=lambda x: Rank.get_rank(x))
+
+    display_title()
+    for rank in tournament.ranking:
+        rank.display()
+
+
 def get_decks_from_web(url):
     page = requests.get(url)
 
     soup = BeautifulSoup(page.content, 'html.parser')
+    return get_deck_from_soup(soup)
+
+
+def get_deck_from_soup(soup):
     results = soup.find(id="content-detail-page-of-an-article")
 
     piles = results.find_all("div", {"class": "deck-list-text"})
@@ -91,7 +97,6 @@ def get_decks_from_web(url):
             decks[counter].score = pilotinfo[1]
         decks[counter].pilot = pilotinfo[0]
 
-
         categories = [
             {"class": "sorted-by-planeswalker clearfix element"},
             {"class": "sorted-by-creature clearfix element"},
@@ -101,7 +106,7 @@ def get_decks_from_web(url):
             {"class": "sorted-by-artifact clearfix element"},
             {"class": "sorted-by-Other clearfix element"},
             {"class": "sorted-by-land clearfix element"}
-            ]
+        ]
 
         pile = piles[counter].find("div", {"class": "sorted-by-overview-container sortedContainer"})
         sb = piles[counter].find("div", {"class": "sorted-by-sideboard-container clearfix element"})

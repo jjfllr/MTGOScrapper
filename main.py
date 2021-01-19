@@ -3,13 +3,7 @@
 # Press Shift+F10 to execute it or replace it with your code.
 # Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
 
-import json
-
-from selenium.webdriver import Chrome
-from selenium.webdriver.chrome.options import Options
-
-from DeckUtils import *
-
+from Classes.DeckUtils import *
 
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
@@ -27,7 +21,6 @@ if __name__ == '__main__':
         from_date.send_keys('12/1/2020')
         to_date.send_keys('12/15/2020')
 
-
         search_form = browser.find_element_by_class_name('form-text')
         search_form.send_keys('modern')
         search_button = browser.find_element_by_id("custom-search-submit")
@@ -44,8 +37,8 @@ if __name__ == '__main__':
             decks = get_decks_from_web(BaseURL + tourney)
             save_decks(decks, './Decks', tourney)
 
-    if True: #test 2
-        if True:
+    if True:  # test 2
+        if False:
             tourneys = get_tournament("10/01/2020", "01/14/2021")
 
             print(str(len(tourneys)) + " Obtained...\n")
@@ -57,7 +50,7 @@ if __name__ == '__main__':
                 decks = get_decks_from_web(BaseURL + tourney)
                 save_decks_as_json(decks, './JSON', tourney)
 
-        if True:
+        if False:
             decks = []
             if False:
                 decks.append(get_deck_from_json_file('./JSON/modern-challenge-2020-10-05_1_Parrit_(1st Place).json'))
@@ -65,7 +58,7 @@ if __name__ == '__main__':
             else:
                 decks = get_json_decks_folder('./JSON')
 
-            cummulative_mainboard = [[], []]
+            cumulative_mainboard = [[], []]
 
             # create the histogram for the decks
             i = 0
@@ -74,16 +67,22 @@ if __name__ == '__main__':
                     """
                     if card:
                         for instance in card:
-                            if not instance[1] in cummulative_mainboard[1]:
-                                cummulative_mainboard[0].append(instance[0])
-                                cummulative_mainboard[1].append(instance[1])
+                            if not instance[1] in cumulative_mainboard[1]:
+                                cumulative_mainboard[0].append(instance[0])
+                                cumulative_mainboard[1].append(instance[1])
                             else:
-                                cummulative_mainboard[0][cummulative_mainboard[1].index(instance[1])] += instance[0]
+                                cumulative_mainboard[0][cumulative_mainboard[1].index(instance[1])] += instance[0]
                     """
-            #cummulative mainboard serves as a hash table for the following operations
+            # cumulative mainboard serves as a hash table for the following operations
 
             print(cummulative_mainboard)
 
+        if True:
+            # https://magic.wizards.com/en/articles/archive/mtgo-standings/modern-showcase-challenge-2021-01-17#bracket
+
+            url = 'https://magic.wizards.com/en/articles/archive/mtgo-standings/modern-showcase-challenge-2021-01-17'
+
+            get_tournament_data_from_web(url)
 
 
 # See PyCharm help at https://www.jetbrains.com/help/pycharm/
